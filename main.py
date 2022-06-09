@@ -5,7 +5,7 @@ logger = logging.getLogger("main")
 
 def handler(event, context):
     text = event.get(
-        'text', 'Hello World. Does GitHub Actions work?')
+        'text', 'Hello World.heheheheheh')
     print(text)
     logger.info(text)
     response = {
