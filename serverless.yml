@@ -1,3 +1,4 @@
+app: lambda-container-template
 service: lambda-container-service
  
 provider:
