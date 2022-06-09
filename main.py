@@ -4,7 +4,7 @@ logger = logging.getLogger("main")
 
 
 def handler(event, context):
-    text = event.get('text', 'Hello World!')
+    text = event.get('text', 'Hello World.')
     print(text)
     logger.info(text)
     response = {
