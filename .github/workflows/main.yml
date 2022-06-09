@@ -1,166 +1,94 @@
----
-name: "GitHub Actions Example"
+# This workflow installs the latest version of Terraform CLI and configures the Terraform CLI configuration file
+# with an API token for Terraform Cloud (app.terraform.io). On pull request events, this workflow will run
+# `terraform init`, `terraform fmt`, and `terraform plan` (speculative plan via Terraform Cloud). On push events
+# to the "main" branch, `terraform apply` will be executed.
+#
+# Documentation for `hashicorp/setup-terraform` is located here: https://github.com/hashicorp/setup-terraform
+#
+# To use this workflow, you will need to complete the following setup steps.
+#
+# 1. Create a `main.tf` file in the root of this repository with the `remote` backend and one or more resources defined.
+#   Example `main.tf`:
+#     # The configuration for the `remote` backend.
+#     terraform {
+#       backend "remote" {
+#         # The name of your Terraform Cloud organization.
+#         organization = "example-organization"
+#
+#         # The name of the Terraform Cloud workspace to store Terraform state files in.
+#         workspaces {
+#           name = "example-workspace"
+#         }
+#       }
+#     }
+#
+#     # An example resource that does nothing.
+#     resource "null_resource" "example" {
+#       triggers = {
+#         value = "A example resource that does nothing!"
+#       }
+#     }
+#
+#
+# 2. Generate a Terraform Cloud user API token and store it as a GitHub secret (e.g. TF_API_TOKEN) on this repository.
+#   Documentation:
+#     - https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
+#     - https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
+#
+# 3. Reference the GitHub secret in step using the `hashicorp/setup-terraform` GitHub Action.
+#   Example:
+#     - name: Setup Terraform
+#       uses: hashicorp/setup-terraform@v1
+#       with:
+#         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+name: 'Terraform'
 
 on:
-  pull_request:
-  push: 
+  push:
     branches:
-      - main
+    - "main"
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   terraform:
+    name: 'Terraform'
     runs-on: ubuntu-latest
-    env:
-      working-directory: terraform
-      TF_WORKSPACE: my-terraform-workspace
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: eu-west-1
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Check out code
-        uses: actions/checkout@v2
-        
-      - name: Run Terrascan
-        id: terrascan
-        uses: accurics/terrascan-action@main
-        with:
-          iac_type: 'terraform'
-          iac_version: 'v14'
-          policy_type: 'aws'
-          only_warn: true
-          iac_dir: infrastructure
-        #sarif_upload: true
-        #non_recursive:
-        #iac_dir:
-        #policy_path:
-        #skip_rules:
-        #config_path:
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 0.14.4
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
 
-      - name: Terraform Fmt
-        id: fmt
-        run: terraform fmt -check
-        continue-on-error: true
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
 
-      - name: Terraform init
-        id: init
-        run: terraform init
-        working-directory: ${{ env.working-directory }}
-        env:
-          TF_CLI_ARGS_init: "-backend-config=role_arn=arn:aws:iam::99999999:role/my-github-actions-role -upgrade -reconfigure"
-          TF_VAR_assume_role: "my-github-actions-role"
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
 
-      - name: Terraform validate
-        id: validate
-        run: terraform validate
-
-      - name: Terraform plan
-        id: plan
-        run: terraform plan -no-color
-        working-directory: ${{ env.working-directory }}
-        env:
-          TF_VAR_assume_role: "my-github-actions-role"
-
-      - name: Plan output
-        id: output
-        uses: actions/github-script@v3
-        if: github.event_name == 'pull_request'
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            ### Workspace
-
-            \`${process.env.TF_WORKSPACE}\`
-
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-            <details><summary>Show Plan</summary>
-
-            \`\`\`hcl
-            ${process.env.PLAN}
-            \`\`\`
-
-            </details>
-
-            **Pusher**: @${{ github.actor }}
-            **Action**: ${{ github.event_name }}
-            `;
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-
-      - name: Terraform apply
-        id: apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
-        working-directory: ${{ env.working-directory }}
-        env:
-          TF_VAR_assume_role: "my-github-actions-role"
-
-      - name: Install InSpec
-        uses: actionshub/chef-install@main
-        with:
-          channel: current
-          project: inspec
-
-      - name: Assume Role
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::88888888888888:role/my-github-actions-role
-          role-duration-seconds: 600
-          role-skip-session-tagging: true          
-
-      - name: Infrastructure Tests
-        id: inspec
-        run: inspec exec profile/example --reporter=cli:- progress:inspec.log --input-file=profile/example/attributes-example.yml -t aws://
-        env:
-          CHEF_LICENSE: accept
-
-      - name: Infrastructure Test Results 
-        id: inspec_results
-        if: always()
-        run: | 
-          REPORT="$(cat inspec.log)"
-          REPORT="${REPORT//'%'/'%25'}"
-          REPORT="${REPORT//$'\n'/'%0A'}"
-          REPORT="${REPORT//$'\r'/'%0D'}"
-          echo "::set-output name=loginspec::$REPORT"
-
-      - name: Infrastructure tests Output
-        if: always()      
-        uses: actions/github-script@v3
-        env:
-          INSPEC: "Inspec Test Results \n${{ steps.inspec_results.outputs.loginspec }}"
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const output = `#### Inspec Tests 🖌\`${{ steps.inspec.outcome }}\`
-
-            <details><summary>Show Test Results</summary>
-
-            \`\`\`
-
-            ${process.env.INSPEC}
-            \`\`\`
-           
-            </details>
-
-            `;
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+      # On push to "main", build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false
