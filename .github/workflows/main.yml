@@ -42,7 +42,7 @@
 #       with:
 #         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-name: 'Terraform'
+name: 'No test Terraform Deploy'
 
 on:
   push:
@@ -55,7 +55,7 @@ permissions:
 
 jobs:
   terraform:
-    name: 'Terraform'
+    name: 'Deploy using Terraform'
     runs-on: ubuntu-latest
     environment: production
 
