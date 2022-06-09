@@ -134,6 +134,56 @@ resource "aws_lambda_function" "lambda_function" {
   package_type  = "Image"
 }
 
+resource "aws_api_gateway_rest_api" "template_api" {
+  name        = "template-api"
+  description = "This is my API for demonstration purposes"
+}
+
+resource "aws_api_gateway_resource" "MyDemoResource" {
+  rest_api_id = aws_api_gateway_rest_api.template_api.id
+  parent_id   = aws_api_gateway_rest_api.template_api.root_resource_id
+  path_part   = "mydemoresource"
+}
+
+resource "aws_api_gateway_method" "demo_method" {
+  rest_api_id   = aws_api_gateway_rest_api.template_api.id
+  resource_id   = aws_api_gateway_resource.MyDemoResource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "MyDemoIntegration" {
+  rest_api_id          = aws_api_gateway_rest_api.template_api.id
+  resource_id          = aws_api_gateway_resource.MyDemoResource.id
+  http_method          = aws_api_gateway_method.demo_method.http_method
+  type                 = "AWS"
+  uri                  = aws_lambda_function.lambda_function.invoke_arn
+  timeout_milliseconds = 29000
+
+  request_parameters = {
+    "integration.request.header.X-Authorization" = "'static'"
+  }
+
+  resource "aws_lambda_permission" "apigw_lambda" {
+    statement_id  = "AllowExecutionFromAPIGateway"
+    action        = "lambda:InvokeFunction"
+    function_name = aws_lambda_function.lambda_function.function_name
+    principal     = "apigateway.amazonaws.com"
+
+    # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+    source_arn = "arn:aws:execute-api:${var.myregion}:${var.access_key}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.method.http_method}${aws_api_gateway_resource.resource.path}"
+  }
+
+  # Transforms the incoming XML request to JSON
+  request_templates = {
+    "application/xml" = <<EOF
+{
+   "body" : $input.json('$')
+}
+EOF
+  }
+}
+
 output "lambda_name" {
   value = aws_lambda_function.lambda_function.id
 }
