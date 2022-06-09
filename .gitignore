@@ -161,3 +161,8 @@ logs/*.log
 !media/*
 *.jpg
 *.jpeg
+
+# terraform
+.terraform/*
+.terraform.*
+terraform.tfstate*
