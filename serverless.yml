@@ -13,8 +13,9 @@ provider:
 functions:
   lambda-container-template:
     image: 578299868702.dkr.ecr.eu-west-3.amazonaws.com/lambda-container-template:latest
-    # events:
-    #   - http:
-    #       path: /
-    #       method: post
-    #       cors: false
+    events:
+      - http:
+          method: post
+          path: /
+          integration: lambda
+          cors: false
