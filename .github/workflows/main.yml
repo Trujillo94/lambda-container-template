@@ -1,0 +1,25 @@
+name: Python application
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy-containerized-lambda:
+    runs-on: ubuntu-latest
+    env:
+      FUNCTION_NAME: word-artist-prod
+    steps:
+      - name: Build Image
+        run: docker build -t ${{ env.FUNCTION_NAME }} -f ./Dockerfile
+      - name: Push Image to Amazon ECR
+        uses: jwalton/gh-ecr-push@v1.3.5
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+          image: ${{ secrets.AWS_IMG_URI }}
+          local-image: ${{ env.FUNCTION_NAME }}:latest
+
+      - name: Update AWS Lambda Image
+        run: aws lambda update-function-code --region ${{ secrets.AWS_REGION }} --function-name ${{ env.FUNCTION_NAME }} --image-uri ${{ secrets.AWS_IMG_URI }}
+

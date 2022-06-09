@@ -1,0 +1,47 @@
+image: python:3.9-slim
+
+definitions:
+  services:
+    docker:
+      memory: 2024
+  steps:
+    - step: &deploy-ecr
+        script:
+          # Connect to AWS cli
+          - pip3 install awscli
+          - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          - aws configure set region $AWS_REGION
+          
+          # Store IMG to ECR
+          - eval $(aws ecr get-login --no-include-email --region $AWS_REGION | sed 's;https://;;g')
+          - docker build -t my_image .
+          - docker tag my_image:latest $ECR
+          - docker push $ECR
+
+          # Update Lambda
+          - aws lambda update-function-code --region $AWS_REGION --function-name $LAMBDA --image-uri $ECR 
+        services:
+          - docker
+        caches:
+          - pip
+          - docker    
+
+pipelines:
+  branches:
+    dev:
+      - step:
+          <<: *deploy-ecr
+          name: Deploy to DEV
+          deployment: Development
+    master:
+      - step:
+          <<: *deploy-ecr
+          name: Deploy to STAG
+          deployment: Staging
+
+      - step:
+          <<: *deploy-ecr
+          name: Deploy to PROD
+          deployment: Production
+          trigger: manual

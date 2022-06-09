@@ -1,0 +1,14 @@
+	
+service: lambda-container-template
+ 
+provider:
+  name: aws
+  ecr:
+    # In this section you can define images that will be built locally and uploaded to ECR
+    images:
+      lambda-container-template:
+        path: ./
+ 
+functions:
+  lambda-container-template:
+    image: 578299868702.dkr.ecr.eu-west-3.amazonaws.com/lambda-container-template:latest
