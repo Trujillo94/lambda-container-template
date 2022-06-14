@@ -132,7 +132,6 @@ jobs:
     steps:
       - name: Remove previous ECR images
         run:
-          aws ecr list-images \
-          --repository-name ${${{ secrets.AWS_ECR_REPO }}:-${{ github.event.repository.name }}}
+          aws ecr list-images --repository-name ${${{ secrets.AWS_ECR_REPO }}:-${{ github.event.repository.name }}}
 
           # --image-ids imageTag=tag1 imageTag=tag2
