@@ -100,10 +100,24 @@ jobs:
       - name: Terraform Apply
         # if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
         run: terraform apply -auto-approve -var="AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+  slack-notify:
+    runs-on: ubuntu-latest
+    steps:
       - name: Slack Notify
         uses: rtCamp/action-slack-notify@v2.2.0
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ job.status }}
+          SLACK_COLOR: ${{ deployment.status }}
           SLACK_USERNAME: "GitHub Actions Bot :robot_face:"
-          SLACK_TITLE: ${{ job.status }}
+          SLACK_TITLE: ${{ job.deployment_status }}
+  removing-images:
+    name: "Removing previous ECR images"
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Remove previous ECR images
+        run: echo "Mocking run"
