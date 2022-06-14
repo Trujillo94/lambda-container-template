@@ -20,7 +20,18 @@ variable "AWS_SECRET_ACCESS_KEY" {
   nullable  = false
 }
 
+variable "REPOSITORY_NAME" {
+  type      = string
+  sensitive = false
+  nullable  = false
+}
 
+variable "AWS_ECR_REPO" {
+  type      = string
+  sensitive = false
+  nullable  = true
+  default   = var.REPOSITORY_NAME
+}
 
 provider "aws" {
   region     = var.region
@@ -31,7 +42,7 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  project_name        = "lambda-container-template-terraform"
+  project_name        = var.REPOSITORY_NAME
   account_id          = data.aws_caller_identity.current.account_id
   ecr_repository_name = local.project_name
   ecr_image_tag       = "latest"
@@ -170,7 +181,7 @@ resource "aws_api_gateway_integration" "MyDemoIntegration" {
   request_templates = {
     "application/xml" = <<EOF
 {
-   "body" : $input.json('$')
+  "body" : $input.json('$')
 }
 EOF
   }
