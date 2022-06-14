@@ -30,7 +30,6 @@ variable "AWS_ECR_REPO" {
   type      = string
   sensitive = false
   nullable  = true
-  default   = var.REPOSITORY_NAME
 }
 
 provider "aws" {
@@ -44,7 +43,7 @@ data "aws_caller_identity" "current" {}
 locals {
   project_name        = var.REPOSITORY_NAME
   account_id          = data.aws_caller_identity.current.account_id
-  ecr_repository_name = local.project_name
+  ecr_repository_name = var.AWS_ECR_REPO || local.project_name
   ecr_image_tag       = "latest"
 }
 
