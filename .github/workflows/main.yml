@@ -140,8 +140,8 @@ jobs:
         env:
           AWS_EC2_METADATA_DISABLED: true
       - name: Remove previous ECR images
-        run:
-          if [[ -n ${{ secrets.AWS_ECR_REPO }} ]]; then REPOSITORY_NAME=${{ secrets.AWS_ECR_REPO }}; else REPOSITORY_NAME=${{ github.event.repository.name }}; fi;
+        run: |
+          if [[ -n ${{ secrets.AWS_ECR_REPO }} ]]; then REPOSITORY_NAME=${{ secrets.AWS_ECR_REPO }}; else REPOSITORY_NAME=${{ github.event.repository.name }}; fi
           aws ecr list-images --repository-name $REPOSITORY_NAME
 
           # --image-ids imageTag=tag1 imageTag=tag2
