@@ -145,4 +145,4 @@ jobs:
         run: |
           if [[ -n ${{ secrets.AWS_ECR_REPO }} ]]; then ECR_REPO_NAME=${{ secrets.AWS_ECR_REPO }}; else ECR_REPO_NAME=${{ github.event.repository.name }}; fi
           IMAGES_TO_DELETE=$( aws ecr list-images --repository-name $ECR_REPO_NAME --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
-          aws ecr batch-delete-image --repository-name $ECR_REPO_NAME --image-ids "$IMAGES_TO_DELETE"
+          aws ecr batch-delete-image --repository-name $ECR_REPO_NAME --image-ids "$IMAGES_TO_DELETE" || "No images deleted."
