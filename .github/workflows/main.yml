@@ -131,6 +131,8 @@ jobs:
         shell: bash
     steps:
       - name: Remove previous ECR images
+        env:
+          AWS_EC2_METADATA_DISABLED: true
         run:
           aws ecr list-images --repository-name ${${{ secrets.AWS_ECR_REPO }}:-${{ github.event.repository.name }}}
 
