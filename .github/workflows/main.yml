@@ -108,9 +108,9 @@ jobs:
         uses: rtCamp/action-slack-notify@v2.2.0
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_COLOR: ${{ deployment.status }}
+          SLACK_COLOR: ${{ job.status }}
           SLACK_USERNAME: "GitHub Actions Bot :robot_face:"
-          SLACK_TITLE: ${{ job.deployment_status }}
+          SLACK_TITLE: ${{ job.status }}
   removing-images:
     name: "Removing previous ECR images"
     runs-on: ubuntu-latest
