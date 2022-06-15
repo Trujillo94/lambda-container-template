@@ -114,7 +114,7 @@ jobs:
   removing-images:
     name: "Removing previous ECR images"
     needs: [build]
-    if: ${{ jobs.check.outputs.status }} == "success"
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     runs-on: ubuntu-latest
     environment: production
     defaults:
