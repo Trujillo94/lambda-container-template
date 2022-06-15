@@ -62,8 +62,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Unit Tests
         run: echo "Mocking Unit Tests"
+
   build:
     name: "Deploy using Terraform"
+    needs: [test]
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     runs-on: ubuntu-latest
     environment: production
 
