@@ -3,7 +3,7 @@ terraform {
   cloud {
     organization = "oriol-trujillo"
     workspaces {
-      name = "github-actions"
+      name = "lambda-container-template"
     }
   }
 
