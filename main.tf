@@ -43,7 +43,7 @@ data "aws_caller_identity" "current" {}
 locals {
   project_name        = var.REPOSITORY_NAME
   account_id          = data.aws_caller_identity.current.account_id
-  ecr_repository_name = var.AWS_ECR_REPO || local.project_name
+  ecr_repository_name = try(var.AWS_ECR_REPO, local.project_name)
   ecr_image_tag       = "latest"
 }
 
