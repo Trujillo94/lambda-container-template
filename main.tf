@@ -1,9 +1,9 @@
 terraform {
 
-  cloud {
+  backend "remote" {
     organization = "oriol-trujillo"
     workspaces {
-      name = "lambda-container-template"
+      name = "aws-trujillo.oriol"
     }
   }
 
