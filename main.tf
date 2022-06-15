@@ -1,4 +1,12 @@
 terraform {
+
+  cloud {
+    organization = "oriol-trujillo"
+    workspaces {
+      name = "github-actions"
+    }
+  }
+
   required_providers {
     aws = {
       source = "hashicorp/aws"
