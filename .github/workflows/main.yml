@@ -147,4 +147,4 @@ jobs:
           IMAGES_TO_DELETE=$( aws ecr list-images --repository-name $ECR_REPO_NAME --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
           N_IMAGES=${#IMAGES_TO_DELETE[@]}
           if [[ -n ${{ secrets.N_OLD_IMAGES_TO_KEEP }} ]]; then N_OLD_IMAGES_TO_KEEP=${{ secrets.N_OLD_IMAGES_TO_KEEP }}; else N_OLD_IMAGES_TO_KEEP=0; fi
-          if (( $N_IMAGES > N_OLD_IMAGES_TO_KEEP )); then aws ecr batch-delete-image --repository-name $ECR_REPO_NAME --image-ids "$IMAGES_TO_DELETE"; else echo "No images to delete. Current images: $N_IMAGES"; fi
+          if (( $N_IMAGES > N_OLD_IMAGES_TO_KEEP )); then aws ecr batch-delete-image --repository-name $ECR_REPO_NAME --image-ids "${IMAGES_TO_DELETE[@]}:N_OLD_IMAGES_TO_KEEP"; else echo "No images to delete. Current images: $N_IMAGES"; fi
