@@ -114,7 +114,7 @@ jobs:
   removing-images:
     name: "Removing previous ECR images"
     needs: [build]
-    if: ${{ steps.check.outputs.status }} == "success"
+    if: ${{ jobs.check.outputs.status }} == "success"
     runs-on: ubuntu-latest
     environment: production
     defaults:
