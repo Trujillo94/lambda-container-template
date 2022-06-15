@@ -3,7 +3,7 @@ terraform {
   backend "remote" {
     organization = "oriol-trujillo"
     workspaces {
-      name = "aws-trujillo.oriol"
+      name = "aws-trujillooriol"
     }
   }
 
