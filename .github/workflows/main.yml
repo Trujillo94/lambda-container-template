@@ -112,13 +112,13 @@ jobs:
       - name: Terraform Plan
         run: |
           if [[ -n ${{ secrets.AWS_ECR_REPO }} ]]; then ECR_REPO_NAME=${{ secrets.AWS_ECR_REPO }}; else ECR_REPO_NAME=${{ github.event.repository.name }}; fi
-          terraform plan -var=REPOSITORY_NAME=${{ github.event.repository.name }} -var=AWS_ECR_REPO=${{ ECR_REPO_NAME }}
+          terraform plan -var=REPOSITORY_NAME=${{ github.event.repository.name }} -var=AWS_ECR_REPO=${{ secrets.AWS_ECR_REPO }}
 
         # On push to "main", build or change infrastructure according to Terraform configuration files
         # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
       - name: Terraform Apply
         # if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-        run: terraform apply -auto-approve -var=REPOSITORY_NAME=${{ github.event.repository.name }} -var=AWS_ECR_REPO=${{ ECR_REPO_NAME }}
+        run: terraform apply -auto-approve -var=REPOSITORY_NAME=${{ github.event.repository.name }} -var=AWS_ECR_REPO=${{ secrets.AWS_ECR_REPO }}
 
   removing-images:
     name: "Removing previous ECR images"
@@ -145,7 +145,7 @@ jobs:
           IMAGES_TO_DELETE=$( aws ecr list-images --repository-name $ECR_REPO_NAME --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
           N_IMAGES=${#IMAGES_TO_DELETE[@]}
           if [[ -n ${{ secrets.N_OLD_IMAGES_TO_KEEP }} ]]; then N_OLD_IMAGES_TO_KEEP=${{ secrets.N_OLD_IMAGES_TO_KEEP }}; else N_OLD_IMAGES_TO_KEEP=0; fi
-          if (( $N_IMAGES > N_OLD_IMAGES_TO_KEEP )); then aws ecr batch-delete-image --repository-name $ECR_REPO_NAME --image-ids "${IMAGES_TO_DELETE[@]}:N_OLD_IMAGES_TO_KEEP"; else echo "No images to delete. Current images: $N_IMAGES"; fi
+          if (( $N_IMAGES > $N_OLD_IMAGES_TO_KEEP )); then aws ecr batch-delete-image --repository-name $ECR_REPO_NAME --image-ids "${IMAGES_TO_DELETE[@]}:N_OLD_IMAGES_TO_KEEP"; else echo "No images to delete. Current images: $N_IMAGES"; fi
 
   slack-notification:
     runs-on: ubuntu-latest
