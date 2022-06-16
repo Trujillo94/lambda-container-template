@@ -1,6 +1,6 @@
 terraform {
 
-  cloud {
+  backend "remote" {
     organization = "oriol-trujillo"
     workspaces {
       name = "aws-trujillooriol"
