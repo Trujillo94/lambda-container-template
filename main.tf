@@ -13,19 +13,8 @@ terraform {
     }
   }
 }
-variable "region" {
-  default = "eu-west-3"
-}
-
-variable "AWS_ACCESS_KEY_ID" {
-  type     = string
-  nullable = false
-}
-
-variable "AWS_SECRET_ACCESS_KEY" {
-  type      = string
-  sensitive = true
-  nullable  = false
+variable "AWS_REGION" {
+  type = string
 }
 
 variable "REPOSITORY_NAME" {
@@ -41,9 +30,6 @@ variable "AWS_ECR_REPO" {
 }
 
 provider "aws" {
-  region     = var.region
-  access_key = var.AWS_ACCESS_KEY_ID
-  secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
 data "aws_caller_identity" "current" {}
@@ -67,7 +53,7 @@ resource "null_resource" "ecr_image" {
 
   provisioner "local-exec" {
     command = <<EOF
-           aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${local.account_id}.dkr.ecr.${var.region}.amazonaws.com
+           aws ecr get-login-password --region ${var.AWS_REGION} | docker login --username AWS --password-stdin ${local.account_id}.dkr.ecr.${var.AWS_REGION}.amazonaws.com
            cd ${path.module}/
            docker build -t ${aws_ecr_repository.repo.repository_url}:${local.ecr_image_tag} .
            docker push ${aws_ecr_repository.repo.repository_url}:${local.ecr_image_tag}
