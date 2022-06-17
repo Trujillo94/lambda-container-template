@@ -211,7 +211,7 @@ resource "aws_api_gateway_integration" "lambda_root" {
 
 resource "aws_api_gateway_deployment" "apideploy" {
   depends_on = [
-    aws_api_gateway_integration.lambda,
+    aws_api_gateway_integration.sample_integration,
     aws_api_gateway_integration.lambda_root
   ]
 
