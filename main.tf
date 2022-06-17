@@ -168,7 +168,7 @@ resource "aws_api_gateway_method" "sample_method" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "MyDemoIntegration" {
+resource "aws_api_gateway_integration" "sample_integration" {
   rest_api_id          = aws_api_gateway_rest_api.sample_api.id
   resource_id          = aws_api_gateway_resource.sample_resource.id
   http_method          = aws_api_gateway_method.sample_method.http_method
@@ -197,7 +197,7 @@ resource "aws_lambda_permission" "apigw_lambda" {
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:${var.AWS_REGION}:${var.AWS_ACCESS_KEY_ID}:${aws_api_gateway_rest_api.sample_api.id}/*/${aws_api_gateway_method.sample_method.http_method}${aws_api_gateway_resource.sample_resource.path}"
+  source_arn = "arn:aws:execute-api:${var.AWS_REGION}:${var.account_id}:${aws_api_gateway_rest_api.sample_api.id}/*/${aws_api_gateway_method.sample_method.http_method}${aws_api_gateway_resource.sample_resource.path}"
 }
 
 output "lambda_name" {
