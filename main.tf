@@ -197,6 +197,7 @@ resource "aws_api_gateway_method_response" "response_200" {
   resource_id = aws_api_gateway_resource.sample_resource.id
   http_method = aws_api_gateway_method.sample_method.http_method
   status_code = "200"
+  # response_models = "application/json => Empty"
 }
 
 resource "aws_api_gateway_integration_response" "MyDemoIntegrationResponse" {
@@ -206,16 +207,16 @@ resource "aws_api_gateway_integration_response" "MyDemoIntegrationResponse" {
   status_code = aws_api_gateway_method_response.response_200.status_code
 
 
-  # Transforms the backend JSON response to XML
-  response_templates = {
-    "application/xml" = <<EOF
-      #set($inputRoot = $input.path('$'))
-      <?xml version="1.0" encoding="UTF-8"?>
-      <message>
-          $inputRoot.body
-      </message>
-      EOF
-  }
+  # # Transforms the backend JSON response to XML
+  # response_templates = {
+  #   "application/xml" = <<EOF
+  #     #set($inputRoot = $input.path('$'))
+  #     <?xml version="1.0" encoding="UTF-8"?>
+  #     <message>
+  #         $inputRoot.body
+  #     </message>
+  #     EOF
+  # }
 }
 
 resource "aws_api_gateway_method" "method_root" {
@@ -243,6 +244,9 @@ resource "aws_api_gateway_deployment" "apideploy" {
 
   rest_api_id = aws_api_gateway_rest_api.sample_api.id
   stage_name  = "test"
+  variables {
+    "deployed_at" = "${var.deployed_at}"
+  }
 }
 
 resource "aws_lambda_permission" "apigw_lambda" {
