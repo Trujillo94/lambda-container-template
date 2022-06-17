@@ -78,7 +78,6 @@ jobs:
       TF_VAR_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       TF_VAR_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       TF_VAR_AWS_REGION: ${{ secrets.AWS_REGION }}
-      TF_VAR_deployed_at: "${{ steps.current-time.outputs.time }}"
 
     steps:
       # Checkout the repository to the GitHub Actions runner
@@ -116,6 +115,8 @@ jobs:
         # On push to "main", build or change infrastructure according to Terraform configuration files
         # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
       - name: Terraform Apply
+        env:
+          TF_VAR_deployed_at: "${{ steps.current-time.outputs.time }}"
         # if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
         run: |
           if [[ -n ${{ secrets.AWS_ECR_REPO }} ]]; then ECR_REPO_NAME=${{ secrets.AWS_ECR_REPO }}; else ECR_REPO_NAME=${{ github.event.repository.name }}; fi
