@@ -158,36 +158,38 @@ resource "aws_api_gateway_rest_api" "sample_api" {
 resource "aws_api_gateway_resource" "sample_resource" {
   rest_api_id = aws_api_gateway_rest_api.sample_api.id
   parent_id   = aws_api_gateway_rest_api.sample_api.root_resource_id
-  path_part   = "sample_resource"
+  path_part   = "sample_resource/{proxy+}"
 }
 
 resource "aws_api_gateway_method" "sample_method" {
   rest_api_id   = aws_api_gateway_rest_api.sample_api.id
   resource_id   = aws_api_gateway_resource.sample_resource.id
-  http_method   = "POST"
+  http_method   = "ANY"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "sample_integration" {
-  rest_api_id          = aws_api_gateway_rest_api.sample_api.id
-  resource_id          = aws_api_gateway_resource.sample_resource.id
-  http_method          = aws_api_gateway_method.sample_method.http_method
-  type                 = "AWS_PROXY"
-  uri                  = aws_lambda_function.sample_lambda.invoke_arn
-  timeout_milliseconds = 29000
+  rest_api_id = aws_api_gateway_rest_api.sample_api.id
+  resource_id = aws_api_gateway_resource.sample_resource.id
+  http_method = aws_api_gateway_method.sample_method.http_method
 
-  request_parameters = {
-    "integration.request.header.X-Authorization" = "'static'"
-  }
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.sample_lambda.invoke_arn
+  timeout_milliseconds    = 29000
+
+  # request_parameters = {
+  #   "integration.request.header.X-Authorization" = "'static'"
+  # }
 
   # Transforms the incoming XML request to JSON
-  request_templates = {
-    "application/xml" = <<EOF
-{
-  "body" : $input.json('$')
-}
-EOF
-  }
+  # request_templates = {
+  #   "application/xml" = <<EOF
+  #   {
+  #     "body" : $input.json('$')
+  #   }
+  #   EOF
+  # }
 }
 
 resource "aws_lambda_permission" "apigw_lambda" {
@@ -197,7 +199,7 @@ resource "aws_lambda_permission" "apigw_lambda" {
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:${var.AWS_REGION}:${local.account_id}:${aws_api_gateway_rest_api.sample_api.id}/*/${aws_api_gateway_method.sample_method.http_method}${aws_api_gateway_resource.sample_resource.path}"
+  source_arn = "arn:aws:execute-api:${var.AWS_REGION}:${local.account_id}:${aws_api_gateway_rest_api.sample_api.id}/*/${aws_api_gateway_method.sample_method.http_method}${aws_api_gateway_resource.sample_resource.path}/*/*"
 }
 
 output "lambda_name" {
