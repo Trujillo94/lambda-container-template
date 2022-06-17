@@ -157,7 +157,7 @@ resource "aws_lambda_function" "sample_lambda" {
 }
 
 resource "aws_api_gateway_rest_api" "sample_api" {
-  name        = "lambda-container-template-api"
+  name        = "${local.project_name}-api"
   description = "This is a template REST API."
 }
 
