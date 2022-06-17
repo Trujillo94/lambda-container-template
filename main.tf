@@ -178,18 +178,18 @@ resource "aws_api_gateway_integration" "sample_integration" {
   uri                     = aws_lambda_function.sample_lambda.invoke_arn
   timeout_milliseconds    = 29000
 
-  # request_parameters = {
-  #   "integration.request.header.X-Authorization" = "'static'"
-  # }
+  request_parameters = {
+    "integration.request.header.X-Authorization" = "'static'"
+  }
 
-  # Transforms the incoming XML request to JSON
-  # request_templates = {
-  #   "application/xml" = <<EOF
-  #   {
-  #     "body" : $input.json('$')
-  #   }
-  #   EOF
-  # }
+  Transforms the incoming XML request to JSON
+  request_templates = {
+    "application/xml" = <<EOF
+    {
+      "body" : $input.json('$')
+    }
+    EOF
+  }
 }
 
 resource "aws_api_gateway_method" "proxy_root" {
