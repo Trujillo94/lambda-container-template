@@ -151,8 +151,8 @@ resource "aws_lambda_function" "sample_lambda" {
 }
 
 resource "aws_api_gateway_rest_api" "sample_api" {
-  name        = "template-api"
-  description = "This is my API for demonstration purposes"
+  name        = "lambda-container-template-api"
+  description = "This is a template REST API."
 }
 
 resource "aws_api_gateway_resource" "sample_resource" {
@@ -231,6 +231,10 @@ resource "aws_lambda_permission" "apigw_lambda" {
 
 output "lambda_name" {
   value = aws_lambda_function.sample_lambda.id
+}
+
+output "base_url" {
+  value = aws_api_gateway_deployment.apideploy.invoke_url
 }
 
 
