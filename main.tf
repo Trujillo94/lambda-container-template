@@ -3,7 +3,7 @@ terraform {
   cloud {
     organization = "oriol-trujillo"
     workspaces {
-      name = "aws-trujillooriol"
+      name = "template"
     }
   }
 
