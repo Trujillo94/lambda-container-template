@@ -38,6 +38,12 @@ variable "AWS_ECR_REPO" {
   nullable  = true
 }
 
+variable "deployed_at" {
+  type      = string
+  sensitive = false
+  nullable  = false
+}
+
 provider "aws" {
   region     = var.AWS_REGION
   access_key = var.AWS_ACCESS_KEY_ID
@@ -244,8 +250,8 @@ resource "aws_api_gateway_deployment" "apideploy" {
 
   rest_api_id = aws_api_gateway_rest_api.sample_api.id
   stage_name  = "test"
-  variables {
-    "deployed_at" = "${var.deployed_at}"
+  variables = {
+    deployed_at = var.deployed_at
   }
 }
 
