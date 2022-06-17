@@ -172,7 +172,7 @@ resource "aws_api_gateway_integration" "sample_integration" {
   rest_api_id          = aws_api_gateway_rest_api.sample_api.id
   resource_id          = aws_api_gateway_resource.sample_resource.id
   http_method          = aws_api_gateway_method.sample_method.http_method
-  type                 = "AWS"
+  type                 = "AWS_PROXY"
   uri                  = aws_lambda_function.sample_lambda.invoke_arn
   timeout_milliseconds = 29000
 
