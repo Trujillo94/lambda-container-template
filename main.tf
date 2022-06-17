@@ -182,7 +182,7 @@ resource "aws_api_gateway_integration" "sample_integration" {
     "integration.request.header.X-Authorization" = "'static'"
   }
 
-  Transforms the incoming XML request to JSON
+  # Transforms the incoming XML request to JSON
   request_templates = {
     "application/xml" = <<EOF
     {
