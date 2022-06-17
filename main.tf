@@ -192,6 +192,15 @@ resource "aws_api_gateway_integration" "sample_integration" {
   # }
 }
 
+resource "aws_api_gateway_deployment" "apideploy" {
+  depends_on = [
+    aws_api_gateway_integration.lambda
+  ]
+
+  rest_api_id = aws_api_gateway_rest_api.sample_api.id
+  stage_name  = "test"
+}
+
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
