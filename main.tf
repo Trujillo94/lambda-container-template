@@ -3,7 +3,7 @@ terraform {
   cloud {
     organization = "oriol-trujillo"
     workspaces {
-      name = "template"
+      name = "lambda-container-template"
     }
   }
 
